@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      - db
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: nowk4scs88k0g0w8wck88gsc
+      DB_PORT: 3306
+      DB_DATABASE: default
+      DB_USERNAME: divinecare_user
+      DB_PASSWORD: Wy2tD4dlmD6hFbKjQQBWHfuIY45PXjQvCDc750Hs5x14oRfTtF3qqs4j0dUIr5w8
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: your_db
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+volumes:
+  db_data:

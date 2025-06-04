@@ -1,0 +1,117 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Dashboard",
+      "icon": "menu-icon tf-icons bx bx-home-smile",
+      "slug": "dashboard",
+      "role": [
+        "admin",
+        "user"
+      ]
+    },
+    {
+      "url": "/order",
+      "name": "Order",
+      "icon": "menu-icon tf-icons bx bx-cart",
+      "slug": "order",
+      "role": [
+        "admin",
+        "user"
+      ]
+    },
+    {
+      "url": "#",
+      "name": "Factory Setting",
+      "icon": "menu-icon tf-icons bx bx-buildings",
+      "slug": "factory",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/warehouses",
+          "name": "Warehouse",
+          "slug": "warehouse",
+          "role": [
+            "admin"
+          ]
+        },
+        {
+          "url": "/user",
+          "name": "User",
+          "slug": "user",
+          "role": [
+            "admin"
+          ]
+        },
+        {
+          "url": "/customers",
+          "name": "Customers",
+          "slug": "customers",
+          "role": ["admin" ,"customer"
+          ]
+        },
+
+         {
+          "url": "/cities",
+          "name": "Cities",
+          "slug": "cities",
+          "role": ["admin"]
+          
+        }
+      ]
+    },
+    {
+      "url": "#",
+      "name": "Material Setting",
+      "icon": "menu-icon tf-icons bx bx-cog",
+      "slug": "material-setting",
+      "role": [
+        "admin"
+      ],
+      "submenu": [
+        {
+          "url": "/shades",
+          "name": "Shades",
+          "slug": "shades",
+          "role": [
+            "admin"
+          ]
+        },
+        {
+          "url": "/patterns",
+          "name": "Patterns",
+          "slug": "patterns",
+          "role": [
+            "admin"
+          ]
+        },
+        {
+          "url": "/sizes",
+          "name": "Sizes",
+          "slug": "sizes",
+          "role": [
+            "admin"
+          ]
+        },
+        {
+          "url": "/embroideries",
+          "name": "Embroidery",
+          "slug": "embroidery",
+          "role": [
+            "admin"
+          ]
+        },
+        {
+          "url": "/products",
+          "name": "Items",
+          "slug": "products",
+          "role": [
+            "admin"
+          ]
+        }
+      ]
+    }
+  ]
+}
