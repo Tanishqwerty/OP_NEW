@@ -40,8 +40,11 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Copy all application files
 COPY . .
 
+# Remove any npm lock files to avoid conflicts with yarn
+RUN rm -f package-lock.json
+
 # Install Node.js dependencies with yarn
-RUN yarn install --frozen-lockfile --production=false
+RUN yarn install --production=false
 
 # Install PHP dependencies without running scripts initially
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
