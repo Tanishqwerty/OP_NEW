@@ -17,6 +17,7 @@ hire-us.html
 # Node modules (will be installed in container)
 node_modules
 npm-debug.log
+yarn-error.log
 
 # Vendor (will be installed in container)
 vendor
@@ -24,6 +25,7 @@ vendor
 # Build artifacts
 public/build
 public/hot
+public/mix-manifest.json
 
 # Storage and cache
 storage/app/*
@@ -52,5 +54,6 @@ Thumbs.db
 *.tmp
 *.temp
 
+# Docker files
 Dockerfile
 .dockerignore

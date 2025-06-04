@@ -37,26 +37,16 @@ ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Copy dependency files first for better caching
-COPY composer.json composer.lock ./
-COPY package.json yarn.lock ./
-
-# Create a minimal artisan file for composer scripts
-RUN echo '#!/usr/bin/env php\n<?php\ndefine("LARAVEL_START", microtime(true));\nrequire __DIR__."/vendor/autoload.php";\n$app = require_once __DIR__."/bootstrap/app.php";\n$kernel = $app->make(Illuminate\\Contracts\\Console\\Kernel::class);\n$status = $kernel->handle(\n    $input = new Symfony\\Component\\Console\\Input\\ArgvInput,\n    new Symfony\\Component\\Console\\Output\\ConsoleOutput\n);\n$kernel->terminate($input, $status);\nexit($status);' > artisan && chmod +x artisan
-
-# Create minimal bootstrap/app.php for composer scripts
-RUN mkdir -p bootstrap && echo '<?php\nrequire_once __DIR__."/../vendor/autoload.php";\n$app = new Illuminate\\Foundation\\Application(\n    $_ENV["APP_BASE_PATH"] ?? dirname(__DIR__)\n);\nreturn $app;' > bootstrap/app.php
-
-# Install PHP dependencies
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
-
-# Install Node.js dependencies
-RUN yarn install --frozen-lockfile --production=false
-
-# Now copy the rest of the application
+# Copy all application files
 COPY . .
 
-# Run composer scripts now that we have the full application
+# Install Node.js dependencies with yarn
+RUN yarn install --frozen-lockfile --production=false
+
+# Install PHP dependencies without running scripts initially
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
+
+# Now run the composer scripts manually to avoid artisan issues
 RUN composer dump-autoload --optimize
 
 # Create .env file with production settings
