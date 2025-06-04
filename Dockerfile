@@ -19,37 +19,47 @@ RUN apt-get update && apt-get install -y \
     default-mysql-client \
     nodejs \
     npm \
-    && docker-php-ext-install pdo pdo_mysql zip mbstring exif pcntl bcmath gd
+    && docker-php-ext-install pdo pdo_mysql zip mbstring exif pcntl bcmath gd \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Composer
 COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+
+# Install Yarn globally
+RUN npm install -g yarn
 
 # Set working directory
 WORKDIR /var/www/html
 
 # Configure Apache document root to point to public directory
-ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Copy package files first for better caching
-COPY package*.json ./
-COPY yarn.lock ./
+# Copy dependency files first for better caching
+COPY composer.json composer.lock ./
+COPY package.json yarn.lock ./
+
+# Create a minimal artisan file for composer scripts
+RUN echo '#!/usr/bin/env php\n<?php\ndefine("LARAVEL_START", microtime(true));\nrequire __DIR__."/vendor/autoload.php";\n$app = require_once __DIR__."/bootstrap/app.php";\n$kernel = $app->make(Illuminate\\Contracts\\Console\\Kernel::class);\n$status = $kernel->handle(\n    $input = new Symfony\\Component\\Console\\Input\\ArgvInput,\n    new Symfony\\Component\\Console\\Output\\ConsoleOutput\n);\n$kernel->terminate($input, $status);\nexit($status);' > artisan && chmod +x artisan
+
+# Create minimal bootstrap/app.php for composer scripts
+RUN mkdir -p bootstrap && echo '<?php\nrequire_once __DIR__."/../vendor/autoload.php";\n$app = new Illuminate\\Foundation\\Application(\n    $_ENV["APP_BASE_PATH"] ?? dirname(__DIR__)\n);\nreturn $app;' > bootstrap/app.php
+
+# Install PHP dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev --no-scripts
 
 # Install Node.js dependencies
-RUN npm install
+RUN yarn install --frozen-lockfile --production=false
 
-# Copy composer files for better caching
-COPY composer.json composer.lock ./
-
-# Install PHP dependencies via Composer
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-
-# Copy Laravel files into the container
+# Now copy the rest of the application
 COPY . .
 
+# Run composer scripts now that we have the full application
+RUN composer dump-autoload --optimize
+
 # Create .env file with production settings
-# Note: APP_URL should be set via environment variable in Coolify
 RUN echo "APP_NAME=Laravel\n\
 APP_ENV=production\n\
 APP_KEY=\n\
@@ -76,17 +86,14 @@ VITE_APP_NAME=Laravel" > .env
 RUN php artisan key:generate --force
 
 # Build frontend assets for production
-RUN npm run build
+RUN yarn build
 
 # Set permissions
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Make sure the public/build directory has correct permissions
-RUN chown -R www-data:www-data /var/www/html/public
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
 
 # Enable Apache modules
-RUN a2enmod rewrite headers
+RUN a2enmod rewrite headers expires
 
 # Configure PHP with higher memory limits and longer execution time
 RUN echo "memory_limit=256M\n\
@@ -94,7 +101,7 @@ upload_max_filesize=64M\n\
 post_max_size=64M\n\
 max_execution_time=300" > /usr/local/etc/php/conf.d/custom.ini
 
-# Configure PHP
+# Configure PHP for production
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # Create Apache virtual host configuration for better asset serving
@@ -120,26 +127,26 @@ RUN echo '<VirtualHost *:80>\n\
     </Directory>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-# Enable expires module for better caching
-RUN a2enmod expires
-
 # Expose port
 EXPOSE 80
 
-# Startup script to ensure proper connection and caching
+# Startup script
 RUN echo '#!/bin/bash\n\
-echo "Starting Laravel application..."\n\
+echo "🚀 Starting Laravel application..."\n\
 \n\
-# Wait a bit for any dependencies\n\
+# Wait for dependencies\n\
 sleep 5\n\
 \n\
-# Clear and cache configurations for production\n\
+# Optimize for production\n\
 php artisan config:clear\n\
 php artisan config:cache\n\
 php artisan route:clear\n\
 php artisan route:cache\n\
 php artisan view:clear\n\
 php artisan view:cache\n\
+\n\
+echo "✅ Laravel optimized for production"\n\
+echo "🌐 Starting Apache server..."\n\
 \n\
 # Start Apache\n\
 apache2-foreground' > /usr/local/bin/startup.sh && \

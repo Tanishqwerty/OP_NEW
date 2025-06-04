@@ -7,12 +7,12 @@ echo "🚀 Starting Laravel deployment..."
 echo "📦 Installing Composer dependencies..."
 composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
-echo "📦 Installing Node.js dependencies..."
-npm ci --only=production
+echo "📦 Installing Node.js dependencies with Yarn..."
+yarn install --frozen-lockfile
 
 # Build assets
 echo "🏗️ Building frontend assets..."
-npm run build
+yarn build
 
 # Laravel optimizations
 echo "⚡ Optimizing Laravel..."
