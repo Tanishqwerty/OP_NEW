@@ -52,34 +52,31 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-d
 # Now run the composer scripts manually to avoid artisan issues
 RUN composer dump-autoload --optimize
 
-# Create .env file with production settings
+# Build frontend assets for production (using a temporary .env for build)
 RUN echo "APP_NAME=Laravel\n\
 APP_ENV=production\n\
-APP_KEY=\n\
+APP_KEY=base64:$(openssl rand -base64 32)\n\
 APP_DEBUG=false\n\
-APP_URL=\${APP_URL:-http://localhost}\n\
+APP_URL=http://localhost\n\
 LOG_CHANNEL=stack\n\
 LOG_DEPRECATIONS_CHANNEL=null\n\
 LOG_LEVEL=error\n\
 DB_CONNECTION=mysql\n\
-DB_HOST=\${DB_HOST:-localhost}\n\
-DB_PORT=\${DB_PORT:-3306}\n\
-DB_DATABASE=\${DB_DATABASE:-laravel}\n\
-DB_USERNAME=\${DB_USERNAME:-root}\n\
-DB_PASSWORD=\${DB_PASSWORD:-}\n\
+DB_HOST=localhost\n\
+DB_PORT=3306\n\
+DB_DATABASE=laravel\n\
+DB_USERNAME=root\n\
+DB_PASSWORD=\n\
 SESSION_DRIVER=file\n\
 BROADCAST_DRIVER=log\n\
 CACHE_DRIVER=file\n\
 FILESYSTEM_DISK=local\n\
 QUEUE_CONNECTION=sync\n\
 SESSION_LIFETIME=120\n\
-VITE_APP_NAME=Laravel" > .env
-
-# Generate application key
-RUN php artisan key:generate --force
-
-# Build frontend assets for production
-RUN yarn build
+VITE_APP_NAME=Laravel" > .env.build \
+    && cp .env.build .env \
+    && yarn build \
+    && rm .env.build .env
 
 # Set permissions
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
@@ -126,6 +123,36 @@ EXPOSE 80
 # Startup script
 RUN echo '#!/bin/bash\n\
 echo "🚀 Starting Laravel application..."\n\
+\n\
+# Create .env file with runtime environment variables\n\
+cat > .env << EOF\n\
+APP_NAME=Laravel\n\
+APP_ENV=production\n\
+APP_KEY=\n\
+APP_DEBUG=false\n\
+APP_URL=${APP_URL:-http://localhost}\n\
+LOG_CHANNEL=stack\n\
+LOG_DEPRECATIONS_CHANNEL=null\n\
+LOG_LEVEL=error\n\
+DB_CONNECTION=mysql\n\
+DB_HOST=${DB_HOST:-localhost}\n\
+DB_PORT=${DB_PORT:-3306}\n\
+DB_DATABASE=${DB_DATABASE:-laravel}\n\
+DB_USERNAME=${DB_USERNAME:-root}\n\
+DB_PASSWORD=${DB_PASSWORD:-}\n\
+SESSION_DRIVER=file\n\
+BROADCAST_DRIVER=log\n\
+CACHE_DRIVER=file\n\
+FILESYSTEM_DISK=local\n\
+QUEUE_CONNECTION=sync\n\
+SESSION_LIFETIME=120\n\
+VITE_APP_NAME=Laravel\n\
+EOF\n\
+\n\
+# Generate application key if not set\n\
+if grep -q "APP_KEY=$" .env; then\n\
+    php artisan key:generate --force\n\
+fi\n\
 \n\
 # Wait for dependencies\n\
 sleep 5\n\
