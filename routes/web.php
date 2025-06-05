@@ -144,6 +144,11 @@ Route::get('/test-css-loader', function () {
     ]);
 });
 
+// Test if Vite directive works now
+Route::get('/test-vite-simple', function () {
+    return view('test-vite-simple');
+});
+
 // Redirect root to login for unauthenticated users
 Route::get('/', function () {
     return redirect('/login');

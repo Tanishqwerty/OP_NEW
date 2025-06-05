@@ -18,6 +18,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AssetLoader::class, function ($app) {
             return new AssetLoader();
         });
+        
+        // Register vite helper function if it doesn't exist
+        if (!function_exists('vite')) {
+            function vite($entrypoints = [], $buildDirectory = 'build') {
+                return app('Illuminate\Foundation\Vite')($entrypoints, $buildDirectory);
+            }
+        }
     }
 
     /**
