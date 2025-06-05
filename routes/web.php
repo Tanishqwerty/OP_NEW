@@ -56,10 +56,29 @@ use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\ItemController;
+use Illuminate\Support\Facades\DB;
 
 // Simple test route for debugging
 Route::get('/test', function () {
     return 'Laravel is working! ' . now();
+});
+
+// Debug route to check database and environment
+Route::get('/debug', function () {
+    try {
+        $dbStatus = DB::connection()->getPdo() ? 'Connected' : 'Failed';
+    } catch (Exception $e) {
+        $dbStatus = 'Error: ' . $e->getMessage();
+    }
+    
+    return response()->json([
+        'status' => 'Laravel is working!',
+        'time' => now(),
+        'database' => $dbStatus,
+        'app_name' => config('app.name'),
+        'app_env' => config('app.env'),
+        'app_debug' => config('app.debug'),
+    ]);
 });
 
 // Redirect root to login for unauthenticated users
@@ -202,7 +221,6 @@ Route::post('products', [ProductController::class, 'store'])->name('products.sto
 Route::resource('products', ProductController::class);
 
 Route::resource('items', ItemController::class);
-Route::get('/items', [OrderItemController::class, 'index']);
 
 Route::get('/order', [OrderController::class, 'index'])->name('order.index');
 Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
