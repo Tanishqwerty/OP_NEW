@@ -83,6 +83,12 @@ RUN if [ -f "/var/www/html/public/build/.vite/manifest.json" ]; then \
         cp /var/www/html/public/build/.vite/manifest.json /var/www/html/public/build/manifest.json; \
     fi
 
+# Debug: List all generated assets
+RUN echo "📦 Generated assets:" && \
+    find /var/www/html/public/build -type f -name "*.css" -o -name "*.js" | head -10 && \
+    echo "📋 Manifest content:" && \
+    head -10 /var/www/html/public/build/manifest.json 2>/dev/null || echo "No manifest found"
+
 # Ensure build directory exists and has proper permissions
 RUN mkdir -p /var/www/html/public/build \
     && chmod -R 755 /var/www/html/public/build
@@ -182,12 +188,18 @@ fi\n\
 chown -R www-data:www-data /var/www/html/public/build\n\
 chmod -R 755 /var/www/html/public/build\n\
 \n\
-# Debug: Check if manifest exists\n\
+# Debug: Check if manifest exists and show CSS files\n\
 if [ -f "/var/www/html/public/build/manifest.json" ]; then\n\
     echo "✅ Manifest found at: /var/www/html/public/build/manifest.json"\n\
     echo "📄 Manifest size: $(stat -c%s /var/www/html/public/build/manifest.json) bytes"\n\
     echo "🔍 First few lines of manifest:"\n\
     head -5 /var/www/html/public/build/manifest.json\n\
+    echo ""\n\
+    echo "🎨 CSS files in build directory:"\n\
+    find /var/www/html/public/build -name "*.css" | head -5 || echo "No CSS files found"\n\
+    echo ""\n\
+    echo "📦 All files in build directory:"\n\
+    ls -la /var/www/html/public/build/ | head -10\n\
 else\n\
     echo "❌ Manifest still missing after rebuild attempt"\n\
     echo "📁 Contents of public/build directory:"\n\

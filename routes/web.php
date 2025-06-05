@@ -81,6 +81,46 @@ Route::get('/debug', function () {
     ]);
 });
 
+// Asset debug route to check Vite assets
+Route::get('/debug-assets', function () {
+    $manifestPath = public_path('build/manifest.json');
+    $manifestExists = file_exists($manifestPath);
+    $manifestContent = $manifestExists ? json_decode(file_get_contents($manifestPath), true) : null;
+    
+    $buildDir = public_path('build');
+    $cssFiles = [];
+    $jsFiles = [];
+    
+    if (is_dir($buildDir)) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($buildDir));
+        foreach ($files as $file) {
+            if ($file->isFile()) {
+                $relativePath = str_replace($buildDir . '/', '', $file->getPathname());
+                if (str_ends_with($file->getFilename(), '.css')) {
+                    $cssFiles[] = $relativePath;
+                } elseif (str_ends_with($file->getFilename(), '.js')) {
+                    $jsFiles[] = $relativePath;
+                }
+            }
+        }
+    }
+    
+    return response()->json([
+        'manifest_exists' => $manifestExists,
+        'manifest_path' => $manifestPath,
+        'manifest_content' => $manifestContent,
+        'css_files' => $cssFiles,
+        'js_files' => $jsFiles,
+        'build_directory_exists' => is_dir($buildDir),
+        'vite_function_exists' => function_exists('vite'),
+    ]);
+});
+
+// Test route to check Vite CSS generation
+Route::get('/test-css', function () {
+    return view('test-css');
+});
+
 // Redirect root to login for unauthenticated users
 Route::get('/', function () {
     return redirect('/login');

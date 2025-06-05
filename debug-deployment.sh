@@ -43,6 +43,23 @@ if [ -f "public/build/manifest.json" ]; then
     echo "- ✅ Manifest found at expected location: public/build/manifest.json"
     echo "- Manifest file size: $(stat -c%s public/build/manifest.json 2>/dev/null || echo "Unknown") bytes"
     echo "- Build assets count: $(find public/build -type f | wc -l) files"
+    
+    echo ""
+    echo "🎨 CSS Files Check:"
+    css_files=$(find public/build -name "*.css" | head -5)
+    if [ -n "$css_files" ]; then
+        echo "- CSS files found:"
+        echo "$css_files" | while read file; do
+            echo "  📄 $file ($(stat -c%s "$file" 2>/dev/null || echo "Unknown") bytes)"
+        done
+    else
+        echo "- ❌ No CSS files found in build directory"
+    fi
+    
+    echo ""
+    echo "📋 Manifest Content (first 20 lines):"
+    head -20 public/build/manifest.json | sed 's/^/  /'
+    
 elif [ -f "public/build/.vite/manifest.json" ]; then
     echo "- ⚠️  Manifest found in .vite subdirectory but not at expected location"
     echo "- Copying manifest to expected location..."
@@ -66,9 +83,10 @@ echo ""
 echo "🔧 Quick Fixes:"
 echo "1. If manifest is in .vite subdirectory: cp public/build/.vite/manifest.json public/build/manifest.json"
 echo "2. If manifest is missing: yarn build"
-echo "3. If database fails: php artisan migrate --force"
-echo "4. If routes fail: php artisan route:clear"
-echo "5. If config issues: php artisan config:clear && php artisan config:cache"
+echo "3. If CSS files missing: yarn build && cp public/build/.vite/manifest.json public/build/manifest.json"
+echo "4. If database fails: php artisan migrate --force"
+echo "5. If routes fail: php artisan route:clear"
+echo "6. If config issues: php artisan config:clear && php artisan config:cache"
 
 echo ""
 echo "Debug completed at $(date)" 
