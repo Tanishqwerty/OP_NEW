@@ -1,15 +1,16 @@
 <!-- BEGIN: Vendor JS-->
 
-@loadjs('resources/assets/vendor/libs/jquery/jquery.js')
-@loadjs('resources/assets/vendor/libs/popper/popper.js')
-@loadjs('resources/assets/vendor/js/bootstrap.js')
-@loadjs('resources/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js')
-@loadjs('resources/assets/vendor/js/menu.js')
+{{-- Load Essential JS Files Directly from Manifest --}}
+<script src="{{ asset('build/assets/jquery-8QpT-S21.js') }}"></script>
+<script src="{{ asset('build/assets/popper-DBXphNvS.js') }}"></script>
+<script src="{{ asset('build/assets/bootstrap-B-W6M1Y3.js') }}"></script>
+<script src="{{ asset('build/assets/perfect-scrollbar-DPYX2UL_.js') }}"></script>
+<script src="{{ asset('build/assets/menu-Bldkajpn.js') }}"></script>
 
 @yield('vendor-script')
 <!-- END: Page Vendor JS-->
 <!-- BEGIN: Theme JS-->
-@loadjs('resources/assets/js/main.js')
+<script src="{{ asset('build/assets/main-CWila6Zz.js') }}"></script>
 
 <!-- END: Theme JS-->
 <!-- Pricing Modal JS-->

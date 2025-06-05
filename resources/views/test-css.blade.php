@@ -5,10 +5,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- Test CSS loading with our custom directive -->
-    @loadcss('resources/assets/vendor/scss/core.scss')
-    @loadcss('resources/assets/vendor/scss/theme-default.scss')
-    @loadcss('resources/css/app.css')
+    <!-- Load CSS files directly from manifest -->
+    <link rel="stylesheet" href="{{ asset('build/assets/core-DzPXZmyI.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/assets/theme-default-AfcCBw0u.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/assets/demo-1L0brNjh.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/assets/boxicons-BL-Hx8g2.css') }}">
+    <link rel="stylesheet" href="{{ asset('build/assets/app-PYZMiv0K.css') }}">
     
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
@@ -27,8 +29,8 @@
     <h1>CSS Loading Test</h1>
     
     <div class="test-box">
-        <h3>Custom CSS Loader Test</h3>
-        <p>If you can see styled content below, our custom CSS loader is working:</p>
+        <h3>Direct CSS Loading Test</h3>
+        <p>If you can see styled content below, direct CSS loading is working:</p>
         
         <!-- These should be styled if Bootstrap/Core CSS is loaded -->
         <button class="btn btn-primary">Primary Button</button>

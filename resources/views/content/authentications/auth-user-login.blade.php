@@ -3,7 +3,7 @@
 @section('title', 'Login Basic - Pages')
 
 @section('page-style')
-@loadcss('resources/assets/vendor/scss/pages/page-auth.scss')
+<link rel="stylesheet" href="{{ asset('build/assets/page-auth-DYoH0B3Y.css') }}">
 @endsection
 
 @section('content')
