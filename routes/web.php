@@ -121,6 +121,29 @@ Route::get('/test-css', function () {
     return view('test-css');
 });
 
+// Test route to check Vite functionality
+Route::get('/test-vite', function () {
+    return response()->json([
+        'vite_function_exists' => function_exists('vite'),
+        'vite_facade_exists' => class_exists('Illuminate\Support\Facades\Vite'),
+        'vite_class_exists' => class_exists('Illuminate\Foundation\Vite'),
+        'laravel_version' => app()->version(),
+        'available_facades' => array_keys(app()->getLoadedProviders()),
+    ]);
+});
+
+// Test route to verify our custom CSS loader
+Route::get('/test-css-loader', function () {
+    $assetLoader = app('App\Services\AssetLoader');
+    
+    return response()->json([
+        'css_output' => $assetLoader->loadCss('resources/assets/vendor/scss/core.scss'),
+        'js_output' => $assetLoader->loadJs('resources/assets/js/main.js'),
+        'all_assets' => $assetLoader->getAllAssets(),
+        'manifest_exists' => file_exists(public_path('build/manifest.json')),
+    ]);
+});
+
 // Redirect root to login for unauthenticated users
 Route::get('/', function () {
     return redirect('/login');
@@ -281,3 +304,34 @@ Route::get('/items', [OrderItemController::class, 'index']);
 Route::resource('warehouses', WarehouseController::class);
 
 Route::resource('cities', CityController::class);
+
+// Manual CSS loading route as Vite workaround
+Route::get('/load-css', function () {
+    $manifestPath = public_path('build/manifest.json');
+    
+    if (!file_exists($manifestPath)) {
+        return response('Manifest not found', 404);
+    }
+    
+    $manifest = json_decode(file_get_contents($manifestPath), true);
+    $cssFiles = [];
+    
+    // Extract CSS files from manifest
+    foreach ($manifest as $key => $asset) {
+        if (isset($asset['file']) && str_ends_with($asset['file'], '.css')) {
+            $cssFiles[] = $asset['file'];
+        }
+    }
+    
+    $cssContent = '';
+    foreach ($cssFiles as $cssFile) {
+        $cssPath = public_path('build/' . $cssFile);
+        if (file_exists($cssPath)) {
+            $cssContent .= file_get_contents($cssPath) . "\n";
+        }
+    }
+    
+    return response($cssContent)
+        ->header('Content-Type', 'text/css')
+        ->header('Cache-Control', 'public, max-age=31536000');
+});

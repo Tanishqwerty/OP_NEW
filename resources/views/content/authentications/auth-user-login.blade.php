@@ -3,9 +3,7 @@
 @section('title', 'Login Basic - Pages')
 
 @section('page-style')
-@vite([
-  'resources/assets/vendor/scss/pages/page-auth.scss'
-])
+@loadcss('resources/assets/vendor/scss/pages/page-auth.scss')
 @endsection
 
 @section('content')
