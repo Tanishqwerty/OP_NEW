@@ -55,7 +55,17 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\ItemController;
 
+// Simple test route for debugging
+Route::get('/test', function () {
+    return 'Laravel is working! ' . now();
+});
+
+// Redirect root to login for unauthenticated users
+Route::get('/', function () {
+    return redirect('/login');
+});
 
 // layout
 Route::get('/layouts/without-menu', [WithoutMenu::class, 'index'])->name('layouts-without-menu');
@@ -121,7 +131,7 @@ Route::get('/tables/basic', [TablesBasic::class, 'index'])->name('tables-basic')
 
 
 // User Login
-Route::get('/', [UserLogin::class, 'show'])->middleware('auth')->name('/');
+// Route::get('/', [UserLogin::class, 'show'])->middleware('auth')->name('/');
 Route::get('/login', [UserLogin::class, 'index'])->middleware('guest')->name('login');
 Route::post('/login', [UserLogin::class, 'login'])->name('login.perform');
 Route::get('/logout', [UserLogin::class, 'logout'])->name('logout');
@@ -195,7 +205,7 @@ Route::resource('items', ItemController::class);
 Route::get('/items', [OrderItemController::class, 'index']);
 
 Route::get('/order', [OrderController::class, 'index'])->name('order.index');
-Route::get('/order', [OrderController::class, 'create'])->name('order.create');
+Route::get('/order/create', [OrderController::class, 'create'])->name('order.create');
 Route::post('/order', [OrderController::class, 'store'])->name('order.store');
 Route::resource('order', OrderController::class);
 

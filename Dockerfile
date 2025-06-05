@@ -126,7 +126,7 @@ echo "🚀 Starting Laravel application..."\n\
 \n\
 # Create .env file with runtime environment variables\n\
 cat > .env << EOF\n\
-APP_NAME=${APP_NAME:-Laravel}\n\
+APP_NAME="${APP_NAME:-Laravel}"\n\
 APP_ENV=${APP_ENV:-production}\n\
 APP_KEY=${APP_KEY:-}\n\
 APP_DEBUG=${APP_DEBUG:-false}\n\
