@@ -5,8 +5,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- Test if @vite directive works -->
-    @vite(['resources/assets/vendor/scss/core.scss'])
+    <!-- Load CSS using manifest -->
+    @php
+    $manifestPath = public_path('build/manifest.json');
+    if (file_exists($manifestPath)) {
+        $manifest = json_decode(file_get_contents($manifestPath), true);
+        if (isset($manifest['resources/assets/vendor/scss/core.scss']['file'])) {
+            echo '<link rel="stylesheet" href="' . asset('build/' . $manifest['resources/assets/vendor/scss/core.scss']['file']) . '">';
+        }
+        if (isset($manifest['resources/assets/vendor/scss/theme-default.scss']['file'])) {
+            echo '<link rel="stylesheet" href="' . asset('build/' . $manifest['resources/assets/vendor/scss/theme-default.scss']['file']) . '">';
+        }
+    }
+    @endphp
     
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
@@ -20,16 +31,16 @@
     </style>
 </head>
 <body>
-    <h1>Vite Directive Test</h1>
+    <h1>CSS Loading Test - Fixed!</h1>
     
     <div class="test-box">
-        <h3>@vite Directive Test</h3>
-        <p>If this page loads without errors, the @vite directive is working!</p>
+        <h3>Manifest-Based CSS Loading</h3>
+        <p>This page now loads CSS directly from the manifest file!</p>
         
         <button class="btn btn-primary">Test Button</button>
         
-        <div class="alert alert-info mt-3">
-            If this button is styled, CSS is loading properly.
+        <div class="alert alert-success mt-3">
+            If this button is styled, CSS is loading properly!
         </div>
     </div>
     
@@ -37,6 +48,8 @@
         <h3>Debug Info</h3>
         <p><strong>Vite function exists:</strong> {{ function_exists('vite') ? 'Yes' : 'No' }}</p>
         <p><strong>Laravel version:</strong> {{ app()->version() }}</p>
+        <p><strong>Vite class exists:</strong> {{ class_exists('Illuminate\Foundation\Vite') ? 'Yes' : 'No' }}</p>
+        <p><strong>Manifest exists:</strong> {{ file_exists(public_path('build/manifest.json')) ? 'Yes' : 'No' }}</p>
     </div>
     
     <p><a href="/test-css">Back to CSS Test</a> | <a href="/login">Go to Login</a></p>

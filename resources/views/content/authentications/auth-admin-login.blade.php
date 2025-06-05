@@ -3,9 +3,15 @@
 @section('title', 'Login Basic - Pages')
 
 @section('page-style')
-@vite([
-  'resources/assets/vendor/scss/pages/page-auth.scss'
-])
+@php
+$manifestPath = public_path('build/manifest.json');
+if (file_exists($manifestPath)) {
+    $manifest = json_decode(file_get_contents($manifestPath), true);
+    if (isset($manifest['resources/assets/vendor/scss/pages/page-auth.scss']['file'])) {
+        echo '<link rel="stylesheet" href="' . asset('build/' . $manifest['resources/assets/vendor/scss/pages/page-auth.scss']['file']) . '">';
+    }
+}
+@endphp
 @endsection
 
 @section('content')

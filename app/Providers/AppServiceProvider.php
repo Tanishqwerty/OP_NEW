@@ -18,13 +18,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AssetLoader::class, function ($app) {
             return new AssetLoader();
         });
-        
-        // Register vite helper function if it doesn't exist
-        if (!function_exists('vite')) {
-            function vite($entrypoints = [], $buildDirectory = 'build') {
-                return app('Illuminate\Foundation\Vite')($entrypoints, $buildDirectory);
-            }
-        }
     }
 
     /**
@@ -32,14 +25,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Ensure Vite is properly configured
-        if (class_exists(Vite::class)) {
-            // Configure Vite for production
-            Vite::macro('isRunningHot', function () {
-                return is_file(public_path('hot'));
-            });
-        }
-        
         // Create a custom Blade directive for loading CSS files manually
         Blade::directive('loadcss', function ($expression) {
             return "<?php echo app('App\\Services\\AssetLoader')->loadCss($expression); ?>";
