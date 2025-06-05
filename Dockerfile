@@ -78,6 +78,10 @@ VITE_APP_NAME=Laravel" > .env.build \
     && yarn build \
     && rm .env.build .env
 
+# Ensure build directory exists and has proper permissions
+RUN mkdir -p /var/www/html/public/build \
+    && chmod -R 755 /var/www/html/public/build
+
 # Set permissions
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
@@ -126,7 +130,7 @@ echo "🚀 Starting Laravel application..."\n\
 \n\
 # Create .env file with runtime environment variables\n\
 cat > .env << EOF\n\
-APP_NAME="${APP_NAME:-Laravel}"\n\
+APP_NAME="${APP_NAME:-Laravel_Order_Processing}"\n\
 APP_ENV=${APP_ENV:-production}\n\
 APP_KEY=${APP_KEY:-}\n\
 APP_DEBUG=${APP_DEBUG:-false}\n\
@@ -157,8 +161,18 @@ else\n\
     echo "Using existing APP_KEY from environment"\n\
 fi\n\
 \n\
+# Ensure build directory and manifest exist\n\
+if [ ! -f "/var/www/html/public/build/manifest.json" ]; then\n\
+    echo "⚠️  Vite manifest not found, rebuilding assets..."\n\
+    yarn build || echo "❌ Asset build failed, but continuing..."\n\
+fi\n\
+\n\
 # Wait for dependencies\n\
 sleep 5\n\
+\n\
+# Run database migrations with force flag\n\
+echo "🗄️  Running database migrations..."\n\
+php artisan migrate --force || echo "⚠️  Migration failed, but continuing..."\n\
 \n\
 # Optimize for production\n\
 php artisan config:clear\n\

@@ -11,18 +11,21 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
-            $table->id();
-            $table->integer('warehouse_id');
-            $table->decimal('total_amount', 10, 2);
-            $table->string('order_number');
-            $table->date('order_date');
-            $table->integer('user_id');
-            $table->integer('payment_id');
-            $table->string('payment_method');
-            $table->string('status');
-            $table->timestamps();
-        });
+        // Check if table already exists to avoid conflicts
+        if (!Schema::hasTable('orders')) {
+            Schema::create('orders', function (Blueprint $table) {
+                $table->id();
+                $table->integer('warehouse_id');
+                $table->decimal('total_amount', 10, 2);
+                $table->string('order_number');
+                $table->date('order_date');
+                $table->integer('user_id');
+                $table->integer('payment_id');
+                $table->string('payment_method');
+                $table->string('status');
+                $table->timestamps();
+            });
+        }
     }
 
     /**
