@@ -78,11 +78,16 @@ VITE_APP_NAME=Laravel" > .env.build \
     && yarn build \
     && rm .env.build .env
 
+# Fix Vite manifest path - Laravel expects it at public/build/manifest.json
+RUN if [ -f "/var/www/html/public/build/.vite/manifest.json" ]; then \
+        cp /var/www/html/public/build/.vite/manifest.json /var/www/html/public/build/manifest.json; \
+    fi
+
 # Ensure build directory exists and has proper permissions
 RUN mkdir -p /var/www/html/public/build \
     && chmod -R 755 /var/www/html/public/build
 
-# Set permissions
+# Set permissions for Laravel directories
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public
 
@@ -161,10 +166,34 @@ else\n\
     echo "Using existing APP_KEY from environment"\n\
 fi\n\
 \n\
-# Ensure build directory and manifest exist\n\
+# Check if manifest exists and rebuild if needed\n\
 if [ ! -f "/var/www/html/public/build/manifest.json" ]; then\n\
     echo "⚠️  Vite manifest not found, rebuilding assets..."\n\
     yarn build || echo "❌ Asset build failed, but continuing..."\n\
+    \n\
+    # Fix manifest path after rebuild\n\
+    if [ -f "/var/www/html/public/build/.vite/manifest.json" ]; then\n\
+        echo "📋 Copying manifest from .vite subdirectory to expected location"\n\
+        cp /var/www/html/public/build/.vite/manifest.json /var/www/html/public/build/manifest.json\n\
+    fi\n\
+fi\n\
+\n\
+# Ensure proper permissions for build directory\n\
+chown -R www-data:www-data /var/www/html/public/build\n\
+chmod -R 755 /var/www/html/public/build\n\
+\n\
+# Debug: Check if manifest exists\n\
+if [ -f "/var/www/html/public/build/manifest.json" ]; then\n\
+    echo "✅ Manifest found at: /var/www/html/public/build/manifest.json"\n\
+    echo "📄 Manifest size: $(stat -c%s /var/www/html/public/build/manifest.json) bytes"\n\
+    echo "🔍 First few lines of manifest:"\n\
+    head -5 /var/www/html/public/build/manifest.json\n\
+else\n\
+    echo "❌ Manifest still missing after rebuild attempt"\n\
+    echo "📁 Contents of public/build directory:"\n\
+    ls -la /var/www/html/public/build/ || echo "Directory does not exist"\n\
+    echo "📁 Contents of public/build/.vite directory:"\n\
+    ls -la /var/www/html/public/build/.vite/ || echo ".vite directory does not exist"\n\
 fi\n\
 \n\
 # Wait for dependencies\n\
@@ -174,13 +203,15 @@ sleep 5\n\
 echo "🗄️  Running database migrations..."\n\
 php artisan migrate --force || echo "⚠️  Migration failed, but continuing..."\n\
 \n\
-# Optimize for production\n\
+# Clear all caches before optimization\n\
 php artisan config:clear\n\
-php artisan config:cache\n\
 php artisan route:clear\n\
+php artisan view:clear\n\
+\n\
+# Optimize for production\n\
+php artisan config:cache\n\
 # Skip route cache for now due to route conflicts\n\
 # php artisan route:cache\n\
-php artisan view:clear\n\
 php artisan view:cache\n\
 \n\
 echo "✅ Laravel optimized for production"\n\

@@ -20,6 +20,7 @@ echo "- composer.json exists: $(test -f composer.json && echo "✅" || echo "❌
 echo "- package.json exists: $(test -f package.json && echo "✅" || echo "❌")"
 echo "- public/build exists: $(test -d public/build && echo "✅" || echo "❌")"
 echo "- public/build/manifest.json exists: $(test -f public/build/manifest.json && echo "✅" || echo "❌")"
+echo "- public/build/.vite/manifest.json exists: $(test -f public/build/.vite/manifest.json && echo "✅" || echo "❌")"
 
 echo ""
 echo "🗄️  Database Check:"
@@ -39,13 +40,23 @@ echo "- Port 80 listening: $(netstat -ln 2>/dev/null | grep ':80 ' && echo "✅"
 echo ""
 echo "📦 Asset Check:"
 if [ -f "public/build/manifest.json" ]; then
+    echo "- ✅ Manifest found at expected location: public/build/manifest.json"
     echo "- Manifest file size: $(stat -c%s public/build/manifest.json 2>/dev/null || echo "Unknown") bytes"
     echo "- Build assets count: $(find public/build -type f | wc -l) files"
+elif [ -f "public/build/.vite/manifest.json" ]; then
+    echo "- ⚠️  Manifest found in .vite subdirectory but not at expected location"
+    echo "- Copying manifest to expected location..."
+    cp public/build/.vite/manifest.json public/build/manifest.json && echo "✅ Manifest copied successfully" || echo "❌ Failed to copy manifest"
 else
-    echo "- ❌ Manifest file missing"
+    echo "- ❌ Manifest file missing from both locations"
     echo "- Attempting to rebuild assets..."
     if command -v yarn &> /dev/null; then
         yarn build && echo "✅ Assets rebuilt successfully" || echo "❌ Asset rebuild failed"
+        # Check again after rebuild
+        if [ -f "public/build/.vite/manifest.json" ]; then
+            echo "- Copying manifest from .vite subdirectory..."
+            cp public/build/.vite/manifest.json public/build/manifest.json && echo "✅ Manifest copied after rebuild" || echo "❌ Failed to copy manifest after rebuild"
+        fi
     else
         echo "❌ Yarn not available"
     fi
@@ -53,10 +64,11 @@ fi
 
 echo ""
 echo "🔧 Quick Fixes:"
-echo "1. If manifest is missing: yarn build"
-echo "2. If database fails: php artisan migrate --force"
-echo "3. If routes fail: php artisan route:clear"
-echo "4. If config issues: php artisan config:clear && php artisan config:cache"
+echo "1. If manifest is in .vite subdirectory: cp public/build/.vite/manifest.json public/build/manifest.json"
+echo "2. If manifest is missing: yarn build"
+echo "3. If database fails: php artisan migrate --force"
+echo "4. If routes fail: php artisan route:clear"
+echo "5. If config issues: php artisan config:clear && php artisan config:cache"
 
 echo ""
 echo "Debug completed at $(date)" 

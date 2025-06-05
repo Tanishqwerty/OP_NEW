@@ -51,26 +51,27 @@ export default defineConfig({
         ...LibsCssFiles,
         ...FontsScssFiles
       ],
-      refresh: true
+      refresh: true,
+      // Ensure proper build directory
+      buildDirectory: 'build',
     }),
     html()
   ],
   build: {
+    // Generate manifest for Laravel to find assets
+    manifest: true,
+    // Output directory for built assets - must match Laravel expectations
+    outDir: 'public/build',
+    // Clean the output directory before building
+    emptyOutDir: true,
     // Ensure assets are built with correct paths for production
     rollupOptions: {
       output: {
         manualChunks: undefined,
       },
     },
-    // Generate manifest for Laravel to find assets
-    manifest: true,
-    // Output directory for built assets
-    outDir: 'public/build',
-    // Clean the output directory before building
-    emptyOutDir: true,
   },
-  // Configure base URL for assets
-  base: process.env.NODE_ENV === 'production' ? '/build/' : '/',
+  // Remove problematic base configuration that might interfere with Laravel
   // Configure server for development
   server: {
     hmr: {

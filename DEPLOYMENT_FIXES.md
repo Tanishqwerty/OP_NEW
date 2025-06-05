@@ -18,27 +18,28 @@
 - `database/migrations/2025_04_25_063609_create_warehouses_table.php`
 - `database/migrations/2025_05_13_070221_create_cities_table.php`
 
-### 2. Vite Manifest Missing ✅
+### 2. Vite Manifest Path Mismatch ✅
 **Problem**: `Vite manifest not found at: /var/www/html/public/build/manifest.json`
 
-**Root Cause**: Frontend assets weren't being built properly during Docker deployment.
+**Root Cause**: Vite was building the manifest to `public/build/.vite/manifest.json` but Laravel was looking for it at `public/build/manifest.json`.
 
 **Solution Applied**:
-- Enhanced Dockerfile to ensure Vite assets are built during image creation
-- Added runtime checks to rebuild assets if manifest is missing
+- Enhanced Dockerfile to copy manifest from `.vite` subdirectory to expected location
+- Added runtime checks to fix manifest path after rebuilds
+- Updated debug script to detect and fix this specific issue
 - Ensured proper permissions for build directory
-- Added automatic migration execution during startup
 
 **Files Modified**:
-- `Dockerfile` - Enhanced asset building and runtime checks
-- `debug-deployment.sh` - Created debugging script
+- `Dockerfile` - Added manifest path fix during build and runtime
+- `vite.config.js` - Improved configuration for Laravel compatibility
+- `debug-deployment.sh` - Added specific checks for manifest path issues
 
 ## Deployment Steps
 
 ### 1. Push Changes to Repository
 ```bash
 git add .
-git commit -m "Fix database migration conflicts and Vite manifest issues"
+git commit -m "Fix database migration conflicts and Vite manifest path issues"
 git push origin main
 ```
 
@@ -65,6 +66,8 @@ public/build/.vite/manifest.json     8.51 kB │ gzip: 1.22 kB
 [... other assets ...]
 ```
 
+**Important**: The manifest will be automatically copied from `public/build/.vite/manifest.json` to `public/build/manifest.json` where Laravel expects it.
+
 ## Migration Status After Fix
 
 Run `php artisan migrate:status` should show:
@@ -86,10 +89,25 @@ Migration name .............................................. Batch / Status
 
 ## Troubleshooting
 
+### If Vite Manifest Path Issue Persists
+```bash
+# Check if manifest exists in .vite subdirectory
+ls -la public/build/.vite/manifest.json
+
+# Copy manifest to expected location
+cp public/build/.vite/manifest.json public/build/manifest.json
+
+# Verify Laravel can now find it
+php artisan route:list
+```
+
 ### If Assets Still Missing
 ```bash
 # SSH into container and run:
 yarn build
+
+# Then fix manifest path:
+cp public/build/.vite/manifest.json public/build/manifest.json
 ```
 
 ### If Database Issues Persist
@@ -128,7 +146,10 @@ This will check:
 - File system status
 - Database connectivity
 - Asset compilation status
+- **Vite manifest path issues** (NEW)
 - Web server status
+
+The script will automatically detect and fix the manifest path issue if found.
 
 ## Environment Variables Required
 
@@ -151,7 +172,7 @@ DB_PASSWORD=Wy2tD4dlmD6hFbKjQQBWHfuIY45PXjQvCDc750Hs5x14oRfTtF3qqs4j0dUIr5w8
 
 After applying these fixes:
 - ✅ Database migrations will run without conflicts
-- ✅ Vite manifest will be available
+- ✅ Vite manifest will be available at the correct path
 - ✅ CSS and JavaScript assets will load properly
 - ✅ Login page will display with proper styling
 - ✅ Application will be fully functional
@@ -164,4 +185,19 @@ After applying these fixes:
 4. Test user authentication flow
 5. Monitor application logs for any remaining issues
 
-The application should now be fully operational with proper styling and database connectivity. 
+The application should now be fully operational with proper styling and database connectivity.
+
+## Quick Fix Commands
+
+If you need to manually fix the manifest issue after deployment:
+
+```bash
+# SSH into the container
+docker exec -it <container_name> bash
+
+# Copy manifest to expected location
+cp /var/www/html/public/build/.vite/manifest.json /var/www/html/public/build/manifest.json
+
+# Restart Apache (if needed)
+service apache2 restart
+``` 
