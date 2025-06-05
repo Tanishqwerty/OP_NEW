@@ -4,26 +4,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
 
-@php
-// Simple manifest-based CSS loading
-$manifestPath = public_path('build/manifest.json');
-$cssAssets = [
-    'resources/assets/vendor/fonts/boxicons.scss',
-    'resources/assets/vendor/scss/core.scss',
-    'resources/assets/vendor/scss/theme-default.scss',
-    'resources/assets/css/demo.css',
-    'resources/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.scss'
-];
-
-if (file_exists($manifestPath)) {
-    $manifest = json_decode(file_get_contents($manifestPath), true);
-    foreach ($cssAssets as $asset) {
-        if (isset($manifest[$asset]['file'])) {
-            echo '<link rel="stylesheet" href="' . asset('build/' . $manifest[$asset]['file']) . '">' . "\n";
-        }
-    }
-}
-@endphp
+@vite([
+  'resources/assets/vendor/fonts/boxicons.scss',
+  'resources/assets/vendor/scss/core.scss',
+  'resources/assets/vendor/scss/theme-default.scss',
+  'resources/assets/css/demo.css',
+  'resources/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.scss'
+])
 
 @yield('vendor-style')
 

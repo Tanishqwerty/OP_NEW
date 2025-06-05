@@ -1,23 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Vite Test</title>
+    <title>Vite Test - Standard Laravel</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <!-- Load CSS using manifest -->
-    @php
-    $manifestPath = public_path('build/manifest.json');
-    if (file_exists($manifestPath)) {
-        $manifest = json_decode(file_get_contents($manifestPath), true);
-        if (isset($manifest['resources/assets/vendor/scss/core.scss']['file'])) {
-            echo '<link rel="stylesheet" href="' . asset('build/' . $manifest['resources/assets/vendor/scss/core.scss']['file']) . '">';
-        }
-        if (isset($manifest['resources/assets/vendor/scss/theme-default.scss']['file'])) {
-            echo '<link rel="stylesheet" href="' . asset('build/' . $manifest['resources/assets/vendor/scss/theme-default.scss']['file']) . '">';
-        }
-    }
-    @endphp
+    <!-- Standard Laravel Vite CSS loading -->
+    @vite([
+        'resources/assets/vendor/scss/core.scss',
+        'resources/assets/vendor/scss/theme-default.scss',
+        'resources/assets/css/demo.css'
+    ])
     
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; }
@@ -31,11 +24,11 @@
     </style>
 </head>
 <body>
-    <h1>CSS Loading Test - Fixed!</h1>
+    <h1>CSS Loading Test - Standard Laravel @vite</h1>
     
     <div class="test-box">
-        <h3>Manifest-Based CSS Loading</h3>
-        <p>This page now loads CSS directly from the manifest file!</p>
+        <h3>Standard Laravel Vite Integration</h3>
+        <p>This page uses the standard @vite directive!</p>
         
         <button class="btn btn-primary">Test Button</button>
         
@@ -53,5 +46,11 @@
     </div>
     
     <p><a href="/test-css">Back to CSS Test</a> | <a href="/login">Go to Login</a></p>
+    
+    <!-- Standard Laravel Vite JS loading -->
+    @vite([
+        'resources/assets/vendor/libs/jquery/jquery.js',
+        'resources/assets/vendor/js/bootstrap.js'
+    ])
 </body>
 </html> 
