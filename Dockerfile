@@ -126,10 +126,10 @@ echo "🚀 Starting Laravel application..."\n\
 \n\
 # Create .env file with runtime environment variables\n\
 cat > .env << EOF\n\
-APP_NAME=Laravel\n\
-APP_ENV=production\n\
-APP_KEY=\n\
-APP_DEBUG=false\n\
+APP_NAME=${APP_NAME:-Laravel}\n\
+APP_ENV=${APP_ENV:-production}\n\
+APP_KEY=${APP_KEY:-}\n\
+APP_DEBUG=${APP_DEBUG:-false}\n\
 APP_URL=${APP_URL:-http://localhost}\n\
 LOG_CHANNEL=stack\n\
 LOG_DEPRECATIONS_CHANNEL=null\n\
@@ -150,8 +150,11 @@ VITE_APP_NAME=Laravel\n\
 EOF\n\
 \n\
 # Generate application key if not set\n\
-if grep -q "APP_KEY=$" .env; then\n\
+if [ -z "$APP_KEY" ] || grep -q "APP_KEY=$" .env; then\n\
+    echo "Generating new APP_KEY..."\n\
     php artisan key:generate --force\n\
+else\n\
+    echo "Using existing APP_KEY from environment"\n\
 fi\n\
 \n\
 # Wait for dependencies\n\
@@ -161,7 +164,8 @@ sleep 5\n\
 php artisan config:clear\n\
 php artisan config:cache\n\
 php artisan route:clear\n\
-php artisan route:cache\n\
+# Skip route cache for now due to route conflicts\n\
+# php artisan route:cache\n\
 php artisan view:clear\n\
 php artisan view:cache\n\
 \n\
